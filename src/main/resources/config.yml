@@ -1,0 +1,133 @@
+# SHJoinItems - items donnés à la connexion et kits par zone WorldGuard (remplace ItemJoin)
+#
+# Chaque item donné porte un tag interne (shjoinitems:item) : le plugin ne retire jamais que ses
+# propres items. Un objet étranger posé sur un slot réservé est déplacé vers un slot libre.
+
+settings:
+  # Mondes où les items sont donnés (vide = tous). Dans les autres mondes, ils sont retirés.
+  worlds: []
+  # Slot sélectionné à la connexion et au changement de monde (0 à 8, -1 = ne rien changer)
+  held-slot: 0
+  # Délai en ticks avant de donner les items (connexion, réapparition) : laisse passer
+  # la téléportation au spawn des autres plugins
+  delay: 2
+  # Les joueurs en créatif peuvent déplacer, jeter et poser les items
+  creative-bypass: true
+  # À la connexion, retire les items d'anciens plugins dont les données contiennent ce texte
+  # (ItemJoin marquait les siens avec « ItemJoin Name »)
+  legacy-tags:
+    - 'ItemJoin Name'
+
+# Kit donné hors des zones ci-dessous
+default-kit: lobby
+
+# Zones WorldGuard, par ordre de priorité : la première région qui contient le joueur choisit le kit.
+# world est facultatif (par défaut, la région est cherchée dans le monde du joueur).
+zones:
+  - region: zone-pvp
+    kit: pvp
+
+# Kits : listes d'items définis dans la section items
+kits:
+  lobby: [opale, saphir, menu, cosmetiques]
+  pvp: [epee-pvp]
+
+# Items
+#   material     : matériau Minecraft (ex. NETHER_STAR)
+#   slot         : 0-8 barre d'action, 9-35 inventaire, head, chest, legs, feet, offhand,
+#                  ou une liste de slots ([0, 1, 2])
+#   amount       : quantité (1 par défaut)
+#   name, lore   : texte avec codes & et couleurs hex &#RRGGBB
+#   enchantments : vrais enchantements, ex. { sharpness: 2, knockback: 1 }
+#   flags :
+#     glow             effet enchanté, sans enchantement
+#     unbreakable      incassable
+#     hide-attributes  cache les dégâts et la vitesse d'attaque
+#     hide-all         cache toutes les infos ajoutées (attributs, enchantements, incassable…)
+#     locked           ne peut pas être déplacé dans l'inventaire
+#     no-drop          ne peut pas être jeté
+#     keep-on-death    n'est pas lâché à la mort (il est redonné à la réapparition)
+#   click        : clics qui lancent les actions : right, left, inventory (clic dans l'inventaire)
+#   actions      : player: <commande>    commande lancée par le joueur
+#                  console: <commande>   commande lancée par la console
+#                  message: <texte>      message au joueur
+#                  title: <titre>|<sous-titre>
+#                  actionbar: <texte>
+#                  %player% est remplacé par le pseudo du joueur
+#   sound        : son joué avec les actions (clé Minecraft, ex. entity.enderman.teleport)
+#   cooldown     : secondes minimum entre deux utilisations
+items:
+  opale:
+    material: HORN_CORAL
+    slot: 0
+    name: '&#F48854&lS&#F59158&lk&#F59A5D&ly&#F6A261&lb&#F7AB65&ll&#F7B46A&lo&#F8BD6E&lc&#F9C572&lk &#FAD77B&lO&#FBE07F&lp&#FCE883&la&#FCF188&ll&#FDFA8C&le &7(Clic droit)'
+    lore:
+      - ''
+      - '&fCliquez pour vous connecter'
+      - '&fsur le &#F48854&lS&#F59158&lk&#F59A5D&ly&#F6A261&lb&#F7AB65&ll&#F7B46A&lo&#F8BD6E&lc&#F9C572&lk &#FAD77B&lO&#FBE07F&lp&#FCE883&la&#FCF188&ll&#FDFA8C&le &f!'
+      - ''
+    flags: [glow, hide-all, locked, no-drop, keep-on-death]
+    click: [right, left]
+    actions:
+      - 'player: joinq opale'
+      - 'title: &r|&6Veuillez patienter...'
+    sound: entity.enderman.teleport
+    cooldown: 2
+
+  saphir:
+    material: GLOW_INK_SAC
+    slot: 1
+    name: '&#00B7FF&lS&#00BBF6&lk&#01C0EC&ly&#01C4E3&lB&#01C8DA&ll&#01CCD0&lo&#02D1C7&lc&#02D5BE&lk &#03DEAB&lS&#03E2A1&la&#03E698&lp&#03EA8F&lh&#04EF85&li&#04F37C&lr &7(Clic droit)'
+    lore:
+      - ''
+      - '&fCliquez pour vous connecter'
+      - '&fsur le &#00B7FFS&#00BBF6k&#01C0ECy&#01C4E3B&#01C8DAl&#01CCD0o&#02D1C7c&#02D5BEk &#03DEABS&#03E2A1a&#03E698p&#03EA8Fh&#04EF85i&#04F37Cr &f!'
+      - ''
+    flags: [glow, hide-all, locked, no-drop, keep-on-death]
+    click: [right, left]
+    actions:
+      - 'player: joinq saphir'
+      - 'title: &r|&6Veuillez patienter...'
+    sound: entity.enderman.teleport
+    cooldown: 2
+
+  menu:
+    material: NETHER_STAR
+    slot: 4
+    name: '&eMenu Serveurs &7(Clic droit)'
+    lore:
+      - ''
+      - '&7Accèdez à la liste des'
+      - '&7différents SkyBlocks'
+    flags: [hide-all, locked, no-drop, keep-on-death]
+    click: [right, left, inventory]
+    actions:
+      - 'console: dm open serveurs %player%'
+    cooldown: 1
+
+  cosmetiques:
+    material: ENDER_CHEST
+    slot: 8
+    name: '&6Cosmétiques &7(Clic droit)'
+    lore:
+      - ''
+      - '&7Découvrez notre liste de'
+      - '&7cosmétiques inédite'
+    flags: [hide-all, locked, no-drop, keep-on-death]
+    click: [right, left]
+    actions:
+      - 'console: dm open COSMgeneral %player%'
+    cooldown: 1
+
+  epee-pvp:
+    material: WOODEN_SWORD
+    slot: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    name: '&fZone PvP'
+    flags: [unbreakable, hide-all, locked, no-drop, keep-on-death]
+
+messages:
+  no-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission &7de faire ça.'
+  usage: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shji reload &7ou &e/shji refresh [joueur]&7.'
+  reloaded: '&7&l« &a&lSH &8&l» &7Configuration &arechargée &7: &a{items} &7items, &a{kits} &7kits, &a{zones} &7zones.'
+  refreshed: '&7&l« &a&lSH &8&l» &7Items de &a{player} &7redonnés.'
+  unknown-player: '&7&l« &c&lSH &8&l» &7Joueur &cintrouvable&7.'

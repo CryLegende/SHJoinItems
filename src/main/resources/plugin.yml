@@ -1,0 +1,18 @@
+name: SHJoinItems
+version: '${project.version}'
+main: org.Cry_Legende.sHJoinItems.SHJoinItems
+api-version: '1.21'
+author: Cry_Legende
+description: Items donnés à la connexion et kits par zone WorldGuard (remplace ItemJoin).
+softdepend: [WorldGuard]
+
+commands:
+  shjoinitems:
+    description: Gestion des items de connexion.
+    usage: /<command> <reload|refresh [joueur]>
+    aliases: [shji]
+
+permissions:
+  shjoinitems.admin:
+    description: Recharger la configuration et redonner les items.
+    default: op
