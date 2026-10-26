@@ -22,13 +22,21 @@ import java.util.Set;
 final class WorldGuardZones {
 
     private final SHJoinItems plugin;
+    private final Factory factory = new Factory();
 
     WorldGuardZones(SHJoinItems plugin) {
         this.plugin = plugin;
     }
 
     void register() {
-        WorldGuard.getInstance().getPlatform().getSessionManager().registerHandler(new Factory(), null);
+        WorldGuard.getInstance().getPlatform().getSessionManager().registerHandler(factory, null);
+    }
+
+    /**
+     * Retire le handler : sans ça, un rechargement du plugin en laisse un second actif sur l'ancienne instance.
+     */
+    void unregister() {
+        WorldGuard.getInstance().getPlatform().getSessionManager().unregisterHandler(factory);
     }
 
     /**

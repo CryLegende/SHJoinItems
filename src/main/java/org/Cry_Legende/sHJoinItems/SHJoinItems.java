@@ -89,6 +89,9 @@ public final class SHJoinItems extends JavaPlugin implements Listener, CommandEx
 
     @Override
     public void onDisable() {
+        if (worldGuard != null) {
+            worldGuard.unregister();
+        }
         currentKits.clear();
         cooldowns.clear();
     }
