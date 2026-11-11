@@ -2,6 +2,17 @@
 #
 # Chaque item donné porte un tag interne (shjoinitems:item) : le plugin ne retire jamais que ses
 # propres items. Un objet étranger posé sur un slot réservé est déplacé vers un slot libre.
+# Les textes des commandes sont dans messages.yml.
+#
+# Commandes (alias : /shji) :
+#   /shjoinitems reload            Recharge config.yml et messages.yml, puis redonne les items aux joueurs connectés.
+#                                  Une erreur de syntaxe annule le rechargement et garde l'ancienne configuration.
+#   /shjoinitems refresh [joueur]  Redonne ses items à un joueur (vous par défaut) et retire ceux des anciens plugins.
+#
+# Permissions (op par défaut) :
+#   shjoinitems.admin          Toute l'administration.
+#   shjoinitems.admin.reload   reload.
+#   shjoinitems.admin.refresh  refresh.
 
 settings:
   # Mondes où les items sont donnés (vide = tous). Dans les autres mondes, ils sont retirés.
@@ -124,10 +135,3 @@ items:
     slot: [0, 1, 2, 3, 4, 5, 6, 7, 8]
     name: '&fZone PvP'
     flags: [unbreakable, hide-all, locked, no-drop, keep-on-death]
-
-messages:
-  no-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission &7de faire ça.'
-  usage: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shji reload &7ou &e/shji refresh [joueur]&7.'
-  reloaded: '&7&l« &a&lSH &8&l» &7Configuration &arechargée &7: &a{items} &7items, &a{kits} &7kits, &a{zones} &7zones.'
-  refreshed: '&7&l« &a&lSH &8&l» &7Items de &a{player} &7redonnés.'
-  unknown-player: '&7&l« &c&lSH &8&l» &7Joueur &cintrouvable&7.'

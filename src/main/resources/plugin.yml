@@ -14,5 +14,14 @@ commands:
 
 permissions:
   shjoinitems.admin:
-    description: Recharger la configuration et redonner les items.
+    description: Toute l'administration de SHJoinItems.
+    default: op
+    children:
+      shjoinitems.admin.reload: true
+      shjoinitems.admin.refresh: true
+  shjoinitems.admin.reload:
+    description: Recharger la configuration et redonner les items (/shjoinitems reload).
+    default: op
+  shjoinitems.admin.refresh:
+    description: Redonner ses items à un joueur (/shjoinitems refresh).
     default: op

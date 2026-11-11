@@ -13,7 +13,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,6 +29,11 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.StringUtil;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +62,8 @@ public final class SHJoinItems extends JavaPlugin implements Listener, CommandEx
     private final Map<UUID, String> currentKits = new HashMap<>();
     private final Map<UUID, Map<String, Long>> cooldowns = new HashMap<>();
 
+    private volatile YamlConfiguration messages = new YamlConfiguration();
+
     private NamespacedKey itemKey;
     private WorldGuardZones worldGuard;
     private Set<String> worlds;
@@ -68,6 +77,13 @@ public final class SHJoinItems extends JavaPlugin implements Listener, CommandEx
     public void onEnable() {
         itemKey = new NamespacedKey(this, "item");
         saveDefaultConfig();
+        migrateMessages();
+        try {
+            messages = readMessages();
+        } catch (IOException | InvalidConfigurationException e) {
+            getLogger().warning("messages.yml illisible, textes par défaut utilisés : " + firstLine(e));
+            messages = defaultMessages();
+        }
         loadConfiguration();
 
         getServer().getPluginManager().registerEvents(this, this);
@@ -96,7 +112,82 @@ public final class SHJoinItems extends JavaPlugin implements Listener, CommandEx
         cooldowns.clear();
     }
 
-    // ------------------------------------------------------------------ configuration
+    // ------------------------------------------------------------------ configuration et messages
+
+    /**
+     * Les textes étaient dans la section messages: de config.yml. Au premier démarrage sans messages.yml, le fichier
+     * est créé avec les textes de ce serveur, complétés par les valeurs du jar. La section de config.yml n'est plus
+     * lue ensuite. usage change de forme (sous-commandes permises) : il vient toujours du jar.
+     */
+    private void migrateMessages() {
+        File file = new File(getDataFolder(), "messages.yml");
+        if (file.exists()) {
+            return;
+        }
+        YamlConfiguration created = defaultMessages();
+        ConfigurationSection old = getConfig().getConfigurationSection("messages");
+        if (old != null) {
+            for (String key : old.getKeys(false)) {
+                if (!key.equals("usage") && old.isString(key)) {
+                    created.set(key, old.getString(key));
+                }
+            }
+        }
+        try {
+            getDataFolder().mkdirs();
+            created.save(file);
+        } catch (IOException e) {
+            getLogger().warning("messages.yml non créé : " + e.getMessage());
+        }
+    }
+
+    private YamlConfiguration defaultMessages() {
+        try (InputStream in = getResource("messages.yml")) {
+            if (in != null) {
+                return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            getLogger().warning("messages.yml du jar illisible : " + e.getMessage());
+        }
+        return new YamlConfiguration();
+    }
+
+    /** messages.yml du serveur ; les clés absentes retombent sur le texte du jar. */
+    private YamlConfiguration readMessages() throws IOException, InvalidConfigurationException {
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.load(new File(getDataFolder(), "messages.yml"));
+        yaml.setDefaults(defaultMessages());
+        return yaml;
+    }
+
+    private static String firstLine(Exception e) {
+        String text = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+        int end = text.indexOf('\n');
+        return (end < 0 ? text : text.substring(0, end)).trim();
+    }
+
+    /**
+     * Relit config.yml et messages.yml. Si l'un des deux a une erreur de syntaxe, rien n'est appliqué (les items des
+     * joueurs restent en place) : renvoie le fichier et la première ligne de l'erreur, null quand tout est rechargé.
+     */
+    private String[] reload() {
+        File configFile = new File(getDataFolder(), "config.yml");
+        try {
+            new YamlConfiguration().load(configFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            return new String[]{configFile.getName(), firstLine(e)};
+        }
+        YamlConfiguration newMessages;
+        try {
+            newMessages = readMessages();
+        } catch (IOException | InvalidConfigurationException e) {
+            return new String[]{"messages.yml", firstLine(e)};
+        }
+        messages = newMessages;
+        loadConfiguration();
+        getServer().getOnlinePlayers().forEach(player -> refresh(player, true, false));
+        return null;
+    }
 
     private void loadConfiguration() {
         reloadConfig();
@@ -397,44 +488,62 @@ public final class SHJoinItems extends JavaPlugin implements Listener, CommandEx
 
     // ------------------------------------------------------------------ commandes
 
+    /** Sous-commandes que l'expéditeur a le droit d'utiliser, avec leur forme d'usage. */
+    private List<String> allowedSubcommands(CommandSender sender) {
+        List<String> allowed = new ArrayList<>();
+        if (sender.hasPermission("shjoinitems.admin.reload")) {
+            allowed.add("reload");
+        }
+        if (sender.hasPermission("shjoinitems.admin.refresh")) {
+            allowed.add("refresh [joueur]");
+        }
+        return allowed;
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("shjoinitems.admin")) {
+        List<String> allowed = allowedSubcommands(sender);
+        if (allowed.isEmpty()) {
             send(sender, "no-permission");
             return true;
         }
         String sub = args.length == 0 ? "" : args[0].toLowerCase(Locale.ROOT);
-        switch (sub) {
-            case "reload" -> {
-                loadConfiguration();
-                getServer().getOnlinePlayers().forEach(player -> refresh(player, true, false));
-                send(sender, "reloaded", "{items}", String.valueOf(items.size()),
-                        "{kits}", String.valueOf(kits.size()), "{zones}", String.valueOf(zones.size()));
+        if (sub.equals("reload") && sender.hasPermission("shjoinitems.admin.reload")) {
+            String[] error = reload();
+            if (error != null) {
+                send(sender, "reload-failed", "{file}", error[0], "{error}", error[1]);
+                return true;
             }
-            case "refresh" -> {
-                Player target = args.length > 1 ? getServer().getPlayerExact(args[1])
-                        : sender instanceof Player player ? player : null;
-                if (target == null) {
-                    send(sender, "unknown-player");
-                    return true;
-                }
-                refresh(target, true, true);
-                send(sender, "refreshed", "{player}", target.getName());
+            send(sender, "reloaded", "{items}", String.valueOf(items.size()),
+                    "{kits}", String.valueOf(kits.size()), "{zones}", String.valueOf(zones.size()));
+        } else if (sub.equals("refresh") && sender.hasPermission("shjoinitems.admin.refresh")) {
+            Player target = args.length > 1 ? getServer().getPlayerExact(args[1])
+                    : sender instanceof Player player ? player : null;
+            if (target == null) {
+                send(sender, "unknown-player");
+                return true;
             }
-            default -> send(sender, "usage");
+            refresh(target, true, true);
+            send(sender, "refreshed", "{player}", target.getName());
+        } else {
+            send(sender, "usage", "{subs}", String.join("&7|&e", allowed));
         }
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!sender.hasPermission("shjoinitems.admin")) {
-            return List.of();
-        }
         if (args.length == 1) {
-            return StringUtil.copyPartialMatches(args[0], List.of("reload", "refresh"), new ArrayList<>());
+            List<String> subs = new ArrayList<>();
+            if (sender.hasPermission("shjoinitems.admin.reload")) {
+                subs.add("reload");
+            }
+            if (sender.hasPermission("shjoinitems.admin.refresh")) {
+                subs.add("refresh");
+            }
+            return StringUtil.copyPartialMatches(args[0], subs, new ArrayList<>());
         }
-        if (args.length == 2 && args[0].equalsIgnoreCase("refresh")) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("refresh") && sender.hasPermission("shjoinitems.admin.refresh")) {
             List<String> names = getServer().getOnlinePlayers().stream().map(Player::getName).toList();
             return StringUtil.copyPartialMatches(args[1], names, new ArrayList<>());
         }
@@ -442,7 +551,10 @@ public final class SHJoinItems extends JavaPlugin implements Listener, CommandEx
     }
 
     private void send(CommandSender sender, String key, String... replacements) {
-        String message = getConfig().getString("messages." + key, "");
+        String message = messages.getString(key);
+        if (message == null) {
+            message = "";
+        }
         for (int i = 0; i + 1 < replacements.length; i += 2) {
             message = message.replace(replacements[i], replacements[i + 1]);
         }

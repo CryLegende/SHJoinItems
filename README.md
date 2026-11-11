@@ -29,18 +29,20 @@ Utilisé sur : **Lobby**.
 
 | Commande | Alias | Description | Permission |
 |---|---|---|---|
-| `/shjoinitems reload` | `/shji reload` | Recharge la configuration et redonne les items aux joueurs connectés. | `shjoinitems.admin` |
-| `/shjoinitems refresh [joueur]` | `/shji refresh` | Redonne ses items à un joueur. | `shjoinitems.admin` |
+| `/shjoinitems reload` | `/shji reload` | Recharge `config.yml` et `messages.yml`, puis redonne les items aux joueurs connectés. Une erreur de syntaxe annule le rechargement. | `shjoinitems.admin.reload` |
+| `/shjoinitems refresh [joueur]` | `/shji refresh` | Redonne ses items à un joueur. | `shjoinitems.admin.refresh` |
 
 ## Permissions
 
 | Permission | Description | Par défaut |
 |---|---|---|
-| `shjoinitems.admin` | Recharger la configuration et redonner les items. | `op` |
+| `shjoinitems.admin` | Toute l'administration (parent des deux permissions ci-dessous). | `op` |
+| `shjoinitems.admin.reload` | `/shjoinitems reload`. | `op` |
+| `shjoinitems.admin.refresh` | `/shjoinitems refresh`. | `op` |
 
 ## Configuration
 
-`config.yml` contient les réglages, le kit par défaut, les zones, les kits et les items (le format de chaque clé est expliqué en commentaire).
+`config.yml` contient les réglages, le kit par défaut, les zones, les kits et les items (le format de chaque clé est expliqué en commentaire). `messages.yml` contient les textes des commandes.
 
 Une zone associe une région WorldGuard à un kit ; la première zone qui contient le joueur l'emporte :
 

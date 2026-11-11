@@ -1,0 +1,14 @@
+# SHJoinItems - messages
+#
+# Variables entre {...} selon le message. Codes couleur & et couleurs hex &#RRGGBB.
+# Un message vide n'envoie rien.
+
+no-permission: '&7&l« &c&lSH &8&l» &7Vous n''avez pas la &cpermission &7de faire ça.'
+# {subs} : les sous-commandes que l'expéditeur peut utiliser
+usage: '&7&l« &e&lSH &8&l» &7Utilisation : &e/shjoinitems &7<&e{subs}&7>.'
+# {items} {kits} {zones} : éléments chargés
+reloaded: '&7&l« &a&lSH &8&l» &7Configuration &arechargée &7: &a{items} &7items, &a{kits} &7kits, &a{zones} &7zones.'
+# {file} : fichier en erreur, {error} : première ligne de l'erreur
+reload-failed: '&7&l« &c&lSH &8&l» &7Rechargement annulé, erreur dans &c{file} &7: &c{error}&7. L''ancienne configuration reste active.'
+refreshed: '&7&l« &a&lSH &8&l» &7Items de &a{player} &7redonnés.'
+unknown-player: '&7&l« &c&lSH &8&l» &7Joueur &cintrouvable&7.'
