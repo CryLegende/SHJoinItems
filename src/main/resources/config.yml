@@ -40,7 +40,7 @@ zones:
 
 # Kits : listes d'items définis dans la section items
 kits:
-  lobby: [opale, saphir, menu, cosmetiques]
+  lobby: [serveur, menu]
   pvp: [epee-pvp]
 
 # Items
@@ -68,36 +68,19 @@ kits:
 #   sound        : son joué avec les actions (clé Minecraft, ex. entity.enderman.teleport)
 #   cooldown     : secondes minimum entre deux utilisations
 items:
-  opale:
+  serveur:
     material: HORN_CORAL
     slot: 0
-    name: '&#F48854&lS&#F59158&lk&#F59A5D&ly&#F6A261&lb&#F7AB65&ll&#F7B46A&lo&#F8BD6E&lc&#F9C572&lk &#FAD77B&lO&#FBE07F&lp&#FCE883&la&#FCF188&ll&#FDFA8C&le &7(Clic droit)'
+    name: '&#00B7FF&lServeur Survie &7(Clic droit)'
     lore:
       - ''
       - '&fCliquez pour vous connecter'
-      - '&fsur le &#F48854&lS&#F59158&lk&#F59A5D&ly&#F6A261&lb&#F7AB65&ll&#F7B46A&lo&#F8BD6E&lc&#F9C572&lk &#FAD77B&lO&#FBE07F&lp&#FCE883&la&#FCF188&ll&#FDFA8C&le &f!'
+      - '&fsur le serveur &#00B7FFSurvie &f!'
       - ''
     flags: [glow, hide-all, locked, no-drop, keep-on-death]
     click: [right, left]
     actions:
-      - 'player: joinq opale'
-      - 'title: &r|&6Veuillez patienter...'
-    sound: entity.enderman.teleport
-    cooldown: 2
-
-  saphir:
-    material: GLOW_INK_SAC
-    slot: 1
-    name: '&#00B7FF&lS&#00BBF6&lk&#01C0EC&ly&#01C4E3&lB&#01C8DA&ll&#01CCD0&lo&#02D1C7&lc&#02D5BE&lk &#03DEAB&lS&#03E2A1&la&#03E698&lp&#03EA8F&lh&#04EF85&li&#04F37C&lr &7(Clic droit)'
-    lore:
-      - ''
-      - '&fCliquez pour vous connecter'
-      - '&fsur le &#00B7FFS&#00BBF6k&#01C0ECy&#01C4E3B&#01C8DAl&#01CCD0o&#02D1C7c&#02D5BEk &#03DEABS&#03E2A1a&#03E698p&#03EA8Fh&#04EF85i&#04F37Cr &f!'
-      - ''
-    flags: [glow, hide-all, locked, no-drop, keep-on-death]
-    click: [right, left]
-    actions:
-      - 'player: joinq saphir'
+      - 'player: server survie'
       - 'title: &r|&6Veuillez patienter...'
     sound: entity.enderman.teleport
     cooldown: 2
@@ -105,33 +88,22 @@ items:
   menu:
     material: NETHER_STAR
     slot: 4
-    name: '&eMenu Serveurs &7(Clic droit)'
+    name: '&eMenu &7(Clic droit)'
     lore:
       - ''
-      - '&7Accèdez à la liste des'
-      - '&7différents SkyBlocks'
+      - '&7Une commande lancée'
+      - '&7par la console'
     flags: [hide-all, locked, no-drop, keep-on-death]
     click: [right, left, inventory]
     actions:
-      - 'console: dm open serveurs %player%'
-    cooldown: 1
-
-  cosmetiques:
-    material: ENDER_CHEST
-    slot: 8
-    name: '&6Cosmétiques &7(Clic droit)'
-    lore:
-      - ''
-      - '&7Découvrez notre liste de'
-      - '&7cosmétiques inédite'
-    flags: [hide-all, locked, no-drop, keep-on-death]
-    click: [right, left]
-    actions:
-      - 'console: dm open COSMgeneral %player%'
+      - 'console: effect give %player% speed 5 1'
+      - 'message: &aVous êtes plus rapide, %player% !'
     cooldown: 1
 
   epee-pvp:
     material: WOODEN_SWORD
     slot: [0, 1, 2, 3, 4, 5, 6, 7, 8]
     name: '&fZone PvP'
+    enchantments:
+      sharpness: 1
     flags: [unbreakable, hide-all, locked, no-drop, keep-on-death]

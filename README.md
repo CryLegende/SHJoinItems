@@ -54,7 +54,7 @@ zones:
     kit: pvp
 
 kits:
-  lobby: [opale, saphir, menu, cosmetiques]
+  lobby: [serveur, menu]
   pvp: [epee-pvp]
 ```
 
